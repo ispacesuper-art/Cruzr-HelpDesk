@@ -1,99 +1,117 @@
 # Help Desk App for Cruzr
 
-Voice-driven help desk for the Cruzr robot. Guests speak a question; the app uses **Cruzr speech recognition (STT)**, matches it to **canned answers**, and speaks the reply via **Cruzr TTS**.
+Voice-driven help desk for the **USC Cruzr** robot. Guests speak a question; the app uses **Cruzr speech recognition (STT)**, matches it to **canned answers**, and speaks the reply via **Cruzr TTS**.
 
-Inspired by the Cruzr platform app layout: landscape tablet UI, microphone access, and Ubtech speech services.
+**Current version:** 2.2 · **Package:** `com.usc.cruzr.helpdesk`
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Features
 
-- **Listen** — Cruzr `SpeechManager.recognize()` for speech-to-text
-- **Canned responses** — keyword matching against `app/src/main/assets/help_topics.json`
-- **Quick topic buttons** — tap instead of speaking (Opening hours, Wi-Fi, Library, etc.)
+- **Auto-listen ASR** — starts listening when the app opens; speak, pause, get an answer; listens again after each reply
+- **Interrupt / barge-in** — talk over the robot or tap **Interrupt** to stop the current reply
+- **Canned responses** — keyword matching in `app/src/main/assets/help_topics.json`
+- **Quick topic buttons** — tap instead of speaking
 - **Welcome message** — spoken greeting on demand
-- **Robot TTS** — answers spoken through `SpeechManager.synthesize()`
+- **Voice assistant handoff** — pauses Cruzr system assistant while Help Desk is open
+- **Mic competition** — requests recognizer + synthesizer via Cruzr competition API
+
+## Architecture
+
+| Class | Role |
+|-------|------|
+| `CruzrApp` | `Robot.initialize()` on startup |
+| `RobotBootstrap` | Safe SDK init; avoids crash if services unavailable |
+| `MainActivity` | UI, topic buttons, permissions |
+| `ContinuousSpeechController` | Auto ASR loop, TTS, interrupt handling |
+| `SpeechResourceController` | Mic/speech resource competition |
+| `VoiceAssistantController` | Pause/restore Cruzr voice assistant |
+| `HelpDeskEngine` | Load topics + keyword matching |
 
 ## Prerequisites
 
 - Android Studio
-- **`cruzr.jar`** in `app/cruzr-libs/` (included in this project; replace with your SDK copy if needed)
-- Physical **Cruzr robot** (speech services are not available on a normal phone/emulator)
+- **`cruzr.jar`** in `app/cruzr-libs/` (Ubtech SDK; keep repo private if required by license)
+- Physical **Cruzr robot** (speech services do not run on a normal phone/emulator)
+- Signed release keystore for CBIS (`keystore.properties` + `helpdesk-release.jks` — not in git)
 
 ## Build
 
-1. **File → Open** → select the `HelpDeskApp` folder
-2. Wait for Gradle sync
-3. **Build → Build Bundle(s) / APK(s) → Build APK(s)**
-
-APK output (uniquely named to avoid CBIS duplicate-name issues):
-
-```
-app/build/outputs/apk/debug/USC-Cruzr-HelpDesk-v1.0-debug.apk
-```
-
-A copy for upload is also placed in:
-
-```
-release/USC-Cruzr-HelpDesk-v1.0-debug.apk
-```
-
-Or from a terminal:
-
 ```powershell
-cd "C:\Users\atw010\OneDrive - University of the Sunshine Coast\Desktop\Cruzr\HelpDeskApp"
-.\gradlew.bat assembleDebug
+cd HelpDeskApp
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+.\gradlew.bat assembleRelease
 ```
 
-## Install on the Cruzr robot
+Release APK:
 
-1. Connect PC and robot to the **same Wi‑Fi**
-2. Enable **Developer options** and **USB debugging** on the robot
-3. Connect via ADB:
+```
+app/build/outputs/apk/release/USC-Cruzr-HelpDesk-v2.2-release.apk
+release/USC-Cruzr-HelpDesk-v2.2-release.apk
+```
+
+## Install on Cruzr
+
+### CBIS (recommended for fleet deploy)
+
+1. **CBIS → Remote Config → Application**
+2. Upload `USC-Cruzr-HelpDesk-v2.2-release.apk`
+3. Package: `com.usc.cruzr.helpdesk`
+4. Entry activity: `com.usc.cruzr.helpdesk.MainActivity`
+5. Ensure robot is **Online** before assigning
+
+### ADB (development)
 
 ```powershell
 adb connect ROBOT_IP:5555
-adb devices
+adb install -r "release\USC-Cruzr-HelpDesk-v2.2-release.apk"
 ```
-
-4. Install:
-
-```powershell
-adb install -r "C:\Users\atw010\OneDrive - University of the Sunshine Coast\Desktop\Cruzr\HelpDeskApp\release\USC-Cruzr-HelpDesk-v1.0-debug.apk"
-```
-
-5. Open **Help Desk** from the app drawer
-
-**Tip:** Stop or disable the Cruzr voice assistant first so this app can use the microphone.
 
 ## How to use
 
 1. Allow **Microphone** when prompted
-2. Tap **Welcome message** for a spoken greeting, or
-3. Tap **Listen** → ask e.g. “What are your opening hours?” → wait for the spoken answer
-4. Or tap a **Quick topic** button for a canned response without speaking
+2. Status shows **“Listening… speak your question, then pause.”**
+3. Ask e.g. *“Where is the library?”* — **pause briefly** so the robot knows you are done
+4. Robot speaks the matched answer, then listens again
+5. While it is speaking, say something new or tap **Interrupt**
+6. Tap **Stop** to pause listening; tap **Listen** to resume
+7. Use **Quick topic** buttons anytime (no mic needed)
 
 ## Customise answers
 
 Edit `app/src/main/assets/help_topics.json`:
 
-- **`label`** — button text
-- **`keywords`** — phrases that trigger the topic
-- **`response`** — what the robot says
+| Field | Purpose |
+|-------|---------|
+| `label` | Button text |
+| `keywords` | Phrases that trigger the topic |
+| `response` | Spoken + on-screen answer |
 
-Rebuild and reinstall after changes.
+Rebuild, commit, and redeploy after changes.
 
-## Package name
+## Git / GitHub
 
-`com.usc.cruzr.helpdesk`
+Repository: [github.com/ispacesuper-art/Cruzr-HelpDesk](https://github.com/ispacesuper-art/Cruzr-HelpDesk)
+
+```powershell
+git add -A
+git commit -m "Describe your change"
+git push origin master
+```
+
+Update **CHANGELOG.md** when bumping `versionName` in `app/build.gradle`.
 
 ## Troubleshooting
 
-| Issue | Likely cause |
-|-------|----------------|
-| No speech recognition | Not running on Cruzr; voice assistant holding the mic |
-| “Speech recognition failed” | Network/cloud ASR issue; try quick topic buttons |
-| App won’t install | Uninstall older debug build first; use `adb uninstall com.usc.cruzr.helpdesk` |
-| No TTS | Cruzr speech service busy; reboot robot or stop other speech apps |
+| Issue | What to try |
+|-------|-------------|
+| App crashes on open | Deploy v2.0+ (hardened startup). Remove stuck CBIS assignment and reinstall. |
+| Listens forever, no answer | Use **v2.2+** (single-utterance mode). Pause after speaking. |
+| “Speech recognition failed” | Voice assistant may hold mic; topic buttons still work. Reopen app. |
+| Mic busy / timeout | Wait a moment; tap **Listen** to retry. Assistant is paused automatically. |
+| CBIS stuck “Configurating” | Confirm robot **Online**; remove/reassign app in CBIS. |
+| No TTS | Check Cruzr speech service / network. Reboot robot if needed. |
 
-## CBIS deployment
+## License / SDK note
 
-For **Remote Config → Application** in CBIS, use a **signed release APK** with `targetSdk` 28–33. For development, **ADB install** is faster.
+`cruzr.jar` is Ubtech proprietary SDK material. Do not redistribute publicly unless permitted by your Ubtech/USC agreement.

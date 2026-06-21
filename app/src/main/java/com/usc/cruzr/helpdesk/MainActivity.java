@@ -18,19 +18,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.button.MaterialButton;
-import com.ubtrobot.async.DoneCallback;
-import com.ubtrobot.async.FailCallback;
-import com.ubtrobot.async.ProgressCallback;
-import com.ubtrobot.speech.RecognitionException;
-import com.ubtrobot.speech.RecognitionOption;
-import com.ubtrobot.speech.RecognitionProgress;
-import com.ubtrobot.speech.RecognitionResult;
 import com.ubtrobot.speech.SpeechManager;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ContinuousSpeechController.Listener {
 
     private static final int REQUEST_RECORD_AUDIO = 1001;
-    private static final long MIC_PREPARE_DELAY_MS = 1000L;
     private static final long ROBOT_INIT_DELAY_MS = 250L;
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -46,9 +38,9 @@ public class MainActivity extends AppCompatActivity {
     private HelpDeskEngine helpDeskEngine;
     private SpeechManager speechManager;
     private SpeechResourceController speechResources;
-    private boolean isListening;
+    private ContinuousSpeechController speechController;
     private boolean robotReady;
-    private Runnable micPrepareRunnable;
+    private boolean speaking;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,12 +59,17 @@ public class MainActivity extends AppCompatActivity {
         speechResources = new SpeechResourceController(this);
         speechResources.setDeniedMessage(getString(R.string.error_mic_busy));
 
-        listenButton.setOnClickListener(v -> startListening());
-        stopButton.setOnClickListener(v -> stopListening());
+        speechController = new ContinuousSpeechController(this, speechResources);
+        speechController.setDeniedMessage(getString(R.string.error_mic_busy));
+        speechController.setListener(this);
+
+        listenButton.setOnClickListener(v -> interruptCurrentSpeech());
+        stopButton.setOnClickListener(v -> pauseListening());
         welcomeButton.setOnClickListener(v -> deliverResponse(helpDeskEngine.getWelcomeResponse(), null));
 
         buildTopicButtons();
         ensureMicrophonePermission();
+        updateListenButtonLabel();
         statusText.setText(R.string.status_starting);
 
         mainHandler.postDelayed(this::initializeRobotServices, ROBOT_INIT_DELAY_MS);
@@ -83,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         if (!robotReady) {
             statusText.setText(R.string.status_robot_unavailable);
             listenButton.setEnabled(false);
+            stopButton.setEnabled(false);
             return;
         }
 
@@ -90,8 +88,11 @@ public class MainActivity extends AppCompatActivity {
         if (speechManager == null) {
             statusText.setText(R.string.status_speech_unavailable);
             listenButton.setEnabled(false);
+            stopButton.setEnabled(false);
             return;
         }
+
+        speechController.bindSpeechManager(speechManager);
 
         try {
             VoiceAssistantController.disableForHelpDesk(this);
@@ -100,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 == PackageManager.PERMISSION_GRANTED) {
-            setReadyState();
+            startAutomaticListening();
         }
     }
 
@@ -117,13 +118,42 @@ public class MainActivity extends AppCompatActivity {
             } catch (Throwable ignored) {
             }
             speechResources.attach();
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                    == PackageManager.PERMISSION_GRANTED
+                    && !speechController.isContinuousActive()) {
+                startAutomaticListening();
+            }
         }
     }
 
     @Override
     protected void onPause() {
-        stopListening();
+        speechController.stopContinuousListening();
         super.onPause();
+    }
+
+    private void startAutomaticListening() {
+        listenButton.setEnabled(true);
+        stopButton.setEnabled(true);
+        userText.setText(R.string.label_waiting);
+        speechController.startContinuousListening();
+    }
+
+    private void pauseListening() {
+        speechController.stopContinuousListening();
+        statusText.setText(R.string.status_paused);
+        userText.setText(R.string.label_paused);
+    }
+
+    private void interruptCurrentSpeech() {
+        if (speaking) {
+            speechController.interruptCurrentSpeech();
+            statusText.setText(R.string.status_interrupted);
+            return;
+        }
+        if (!speechController.isContinuousActive()) {
+            startAutomaticListening();
+        }
     }
 
     private void buildTopicButtons() {
@@ -175,174 +205,20 @@ public class MainActivity extends AppCompatActivity {
         }
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             if (speechManager != null) {
-                setReadyState();
+                startAutomaticListening();
             }
         } else {
             statusText.setText(R.string.status_no_permission);
             listenButton.setEnabled(false);
+            stopButton.setEnabled(false);
             Toast.makeText(this, R.string.toast_allow_microphone, Toast.LENGTH_LONG).show();
         }
     }
 
-    private void setReadyState() {
-        statusText.setText(R.string.status_ready);
-        listenButton.setEnabled(true);
-        stopButton.setEnabled(false);
-    }
-
-    private void startListening() {
-        if (isListening || speechManager == null) {
-            return;
-        }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            ensureMicrophonePermission();
-            return;
-        }
-
-        try {
-            VoiceAssistantController.disableForHelpDesk(this);
-        } catch (Throwable ignored) {
-        }
-        speechResources.reacquire();
-
-        userText.setText(R.string.label_listening);
-        responseText.setText("");
-        statusText.setText(R.string.status_pausing_assistant);
-        listenButton.setEnabled(false);
-        stopButton.setEnabled(true);
-
-        micPrepareRunnable = this::requestMicrophoneAccess;
-        mainHandler.postDelayed(micPrepareRunnable, MIC_PREPARE_DELAY_MS);
-    }
-
-    private void requestMicrophoneAccess() {
-        if (isFinishing()) {
-            return;
-        }
-
-        statusText.setText(R.string.status_requesting_mic);
-        speechResources.requestAccess(new SpeechResourceController.AccessCallback() {
-            @Override
-            public void onGranted() {
-                runOnUiThread(() -> beginRecognition());
-            }
-
-            @Override
-            public void onDenied(String reason) {
-                runOnUiThread(() -> {
-                    listenButton.setEnabled(true);
-                    stopButton.setEnabled(false);
-                    showError(reason);
-                });
-            }
-        });
-    }
-
-    private void beginRecognition() {
-        if (speechManager == null || isListening) {
-            listenButton.setEnabled(true);
-            stopButton.setEnabled(false);
-            return;
-        }
-
-        try {
-            VoiceAssistantController.disableForHelpDesk(this);
-        } catch (Throwable ignored) {
-        }
-
-        try {
-            speechManager.stopRecording();
-        } catch (Throwable ignored) {
-        }
-
-        isListening = true;
-        statusText.setText(R.string.status_listening);
-
-        RecognitionOption option = new RecognitionOption.Builder(RecognitionOption.MODE_SINGLE)
-                .setDistanceRange(RecognitionOption.DISTANCE_RANGE_NEAR_FIELD)
-                .setTimeoutMillis(12000)
-                .build();
-
-        try {
-            speechManager.recognize(option)
-                    .progress(new ProgressCallback<RecognitionProgress>() {
-                        @Override
-                        public void onProgress(RecognitionProgress progress) {
-                            runOnUiThread(() -> {
-                                String partial = progress.getTextResult();
-                                if (!TextUtils.isEmpty(partial)) {
-                                    userText.setText(partial);
-                                }
-                            });
-                        }
-                    })
-                    .done(new DoneCallback<RecognitionResult>() {
-                        @Override
-                        public void onDone(RecognitionResult result) {
-                            runOnUiThread(() -> {
-                                finishListeningUi();
-                                handleUserInput(result != null ? result.getText() : "");
-                            });
-                        }
-                    })
-                    .fail(new FailCallback<RecognitionException>() {
-                        @Override
-                        public void onFail(RecognitionException exception) {
-                            runOnUiThread(() -> {
-                                finishListeningUi();
-                                String message = exception != null && !TextUtils.isEmpty(exception.getMessage())
-                                        ? exception.getMessage()
-                                        : getString(R.string.error_recognition_failed);
-                                showError(message);
-                            });
-                        }
-                    });
-        } catch (Throwable error) {
-            finishListeningUi();
-            showError(getString(R.string.error_recognition_failed));
-        }
-    }
-
-    private void finishListeningUi() {
-        isListening = false;
-        listenButton.setEnabled(true);
-        stopButton.setEnabled(false);
-    }
-
-    private void stopListening() {
-        if (micPrepareRunnable != null) {
-            mainHandler.removeCallbacks(micPrepareRunnable);
-            micPrepareRunnable = null;
-        }
-        if (speechManager != null) {
-            try {
-                speechManager.stopRecording();
-            } catch (Throwable ignored) {
-            }
-        }
-        isListening = false;
-        listenButton.setEnabled(true);
-        stopButton.setEnabled(false);
-        if (speechManager != null) {
-            statusText.setText(R.string.status_ready);
-        }
-    }
-
     private void handleTopicSelection(String topicId) {
+        speechController.interruptCurrentSpeech();
         HelpDeskEngine.MatchResult match = helpDeskEngine.matchTopicId(topicId);
         userText.setText(match.topic != null ? match.topic.label : "");
-        deliverResponse(match.response, match.topic);
-    }
-
-    private void handleUserInput(String spokenText) {
-        if (TextUtils.isEmpty(spokenText)) {
-            showError(getString(R.string.error_no_speech));
-            return;
-        }
-
-        userText.setText(spokenText);
-        HelpDeskEngine.MatchResult match = helpDeskEngine.match(spokenText);
         deliverResponse(match.response, match.topic);
     }
 
@@ -351,13 +227,11 @@ public class MainActivity extends AppCompatActivity {
         statusText.setText(topic != null
                 ? getString(R.string.status_answered_topic, topic.label)
                 : getString(R.string.status_answered));
+        speechController.speak(response);
+    }
 
-        if (speechManager != null) {
-            try {
-                speechManager.synthesize(response);
-            } catch (Throwable ignored) {
-            }
-        }
+    private void updateListenButtonLabel() {
+        listenButton.setText(speaking ? R.string.btn_interrupt : R.string.btn_listen);
     }
 
     private void showError(String message) {
@@ -366,8 +240,55 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onStatusChanged(String status) {
+        switch (status) {
+            case ContinuousSpeechController.Status.REQUESTING_MIC:
+                statusText.setText(R.string.status_requesting_mic);
+                break;
+            case ContinuousSpeechController.Status.LISTENING:
+                statusText.setText(R.string.status_listening_always);
+                break;
+            case ContinuousSpeechController.Status.SPEAKING:
+                statusText.setText(R.string.status_speaking);
+                break;
+            case ContinuousSpeechController.Status.INTERRUPTED:
+                statusText.setText(R.string.status_interrupted);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onPartialSpeech(String text) {
+        userText.setText(text);
+    }
+
+    @Override
+    public void onFinalSpeech(String text) {
+        if (TextUtils.isEmpty(text)) {
+            showError(getString(R.string.error_no_speech));
+            return;
+        }
+        userText.setText(text);
+        HelpDeskEngine.MatchResult match = helpDeskEngine.match(text);
+        deliverResponse(match.response, match.topic);
+    }
+
+    @Override
+    public void onSpeakingChanged(boolean speaking) {
+        this.speaking = speaking;
+        updateListenButtonLabel();
+    }
+
+    @Override
+    public void onError(String message) {
+        showError(message);
+    }
+
+    @Override
     protected void onDestroy() {
-        stopListening();
+        speechController.stopContinuousListening();
         speechResources.detach();
         try {
             VoiceAssistantController.restoreDefault(this);
