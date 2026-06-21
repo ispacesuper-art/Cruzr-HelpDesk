@@ -2,6 +2,16 @@
 
 All notable changes to the USC Cruzr Help Desk app are documented here.
 
+## [2.4] — 2026-06-19
+
+### Fixed
+- **Cruzr voice assistant interference:** Re-applies suppression every 2 seconds while Help Desk is open (the system assistant can turn itself back on).
+- **`LeisureManager.prohibitedLeisure()`** — blocks idle/wake leisure behaviours that compete for the mic.
+- Disables voice/wakeup leisure entries via `enableLeisure(key, false)` when detected.
+
+### Changed
+- Suppression also runs immediately before each microphone access request.
+
 ## [2.3] — 2026-06-19
 
 ### Fixed

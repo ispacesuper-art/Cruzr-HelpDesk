@@ -94,10 +94,7 @@ public class MainActivity extends AppCompatActivity implements ContinuousSpeechC
 
         speechController.bindSpeechManager(speechManager);
 
-        try {
-            VoiceAssistantController.disableForHelpDesk(this);
-        } catch (Throwable ignored) {
-        }
+        VoiceAssistantController.startKeepAliveSuppression(this);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -113,10 +110,7 @@ public class MainActivity extends AppCompatActivity implements ContinuousSpeechC
             return;
         }
         if (speechManager != null) {
-            try {
-                VoiceAssistantController.disableForHelpDesk(this);
-            } catch (Throwable ignored) {
-            }
+            VoiceAssistantController.startKeepAliveSuppression(this);
             speechResources.attach();
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                     == PackageManager.PERMISSION_GRANTED

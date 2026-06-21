@@ -103,6 +103,8 @@ public class SpeechResourceController implements CompetitionListener {
             return;
         }
 
+        VoiceAssistantController.disableForHelpDesk(appContext);
+
         if (acquired.get()) {
             callback.onGranted();
             return;
