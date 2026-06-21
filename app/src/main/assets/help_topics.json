@@ -1,0 +1,68 @@
+[
+  {
+    "id": "greeting",
+    "label": "Hello",
+    "keywords": ["hello", "hi", "hey", "good morning", "good afternoon", "good evening", "gday", "g'day"],
+    "response": "Hello! Welcome to the help desk. I can answer questions about opening hours, directions, Wi-Fi, and campus services. What would you like to know?"
+  },
+  {
+    "id": "hours",
+    "label": "Opening hours",
+    "keywords": ["hours", "open", "opening", "close", "closing", "time", "when are you"],
+    "response": "The help desk is open Monday to Friday, 8 AM to 5 PM. We are closed on weekends and public holidays."
+  },
+  {
+    "id": "location",
+    "label": "Where is reception?",
+    "keywords": ["where", "location", "reception", "front desk", "find you", "directions", "map"],
+    "response": "Reception is on the ground floor near the main entrance. Follow the signs to the information desk and someone can assist you in person."
+  },
+  {
+    "id": "library",
+    "label": "Library",
+    "keywords": ["library", "books", "study", "learning hub", "learning centre", "learning center"],
+    "response": "The library is on level two. It offers study spaces, printing, and research support during campus opening hours."
+  },
+  {
+    "id": "wifi",
+    "label": "Wi-Fi",
+    "keywords": ["wifi", "wi-fi", "internet", "network", "password", "connect", "wireless"],
+    "response": "Connect to the campus guest Wi-Fi network and sign in with your student or staff credentials. If you need help, visit the IT support desk."
+  },
+  {
+    "id": "it",
+    "label": "IT support",
+    "keywords": ["it", "computer", "laptop", "login", "password reset", "technical", "tech support", "printer"],
+    "response": "For IT support, visit the IT help desk or call campus support. They can help with passwords, Wi-Fi, printing, and device issues."
+  },
+  {
+    "id": "parking",
+    "label": "Parking",
+    "keywords": ["parking", "park", "car", "vehicle", "permit"],
+    "response": "Visitor parking is available near the main entrance. Paid parking applies on weekdays. Check signage for permit and accessible parking bays."
+  },
+  {
+    "id": "food",
+    "label": "Food & coffee",
+    "keywords": ["food", "coffee", "cafe", "cafeteria", "lunch", "eat", "hungry", "canteen"],
+    "response": "The campus cafe is on the ground floor and serves coffee, snacks, and light meals during weekday business hours."
+  },
+  {
+    "id": "human",
+    "label": "Speak to a person",
+    "keywords": ["person", "human", "staff", "someone", "real person", "agent", "representative", "talk to"],
+    "response": "I can connect you with a staff member at reception. Please walk to the front desk, or press the assistance bell if one is available."
+  },
+  {
+    "id": "thanks",
+    "label": "Thank you",
+    "keywords": ["thank", "thanks", "cheers", "appreciate", "helpful"],
+    "response": "You are welcome! Is there anything else I can help you with today?"
+  },
+  {
+    "id": "goodbye",
+    "label": "Goodbye",
+    "keywords": ["bye", "goodbye", "see you", "later", "done", "that is all", "that's all"],
+    "response": "Goodbye! Have a great day, and feel free to ask if you need more help."
+  }
+]
