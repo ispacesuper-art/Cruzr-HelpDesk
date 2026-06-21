@@ -2,6 +2,13 @@
 
 All notable changes to the USC Cruzr Help Desk app are documented here.
 
+## [2.3] — 2026-06-19
+
+### Fixed
+- **Stopped listening after first answer:** After TTS, the app now force-restarts a fresh recognition session instead of trusting a stale `isRecognizing()` state from barge-in listening during speech.
+- **`awaitingResponse` deadlock:** Cleared in a `finally` block after each final utterance so restart scheduling is never blocked.
+- **Missing TTS callback:** Added a duration-based fallback timer when Cruzr synthesis `onDone` does not fire, so listening resumes even if the SDK callback is lost.
+
 ## [2.2] — 2026-06-19
 
 ### Fixed

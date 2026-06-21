@@ -39,7 +39,7 @@ public class ContinuousSpeechController {
     private static final String TAG = "ContinuousSpeech";
     private static final long MIC_PREPARE_DELAY_MS = 1000L;
     private static final long RECOGNITION_RETRY_DELAY_MS = 400L;
-    private static final long POST_SPEECH_DELAY_MS = 600L;
+    private static final long POST_SPEECH_DELAY_MS = 800L;
     private static final long RECOGNITION_TIMEOUT_MS = 12000L;
     private static final int BARGE_IN_MIN_CHARS = 3;
 
@@ -59,6 +59,7 @@ public class ContinuousSpeechController {
     private boolean awaitingResponse;
     private Runnable micPrepareRunnable;
     private Runnable recognitionRetryRunnable;
+    private Runnable synthesisFallbackRunnable;
 
     public ContinuousSpeechController(Context context, SpeechResourceController speechResources) {
         appContext = context.getApplicationContext();
@@ -114,6 +115,7 @@ public class ContinuousSpeechController {
         recognitionStarting = false;
         cancelMicPrepare();
         cancelRecognitionRetry();
+        cancelSynthesisFallback();
         cancelRecognition();
         cancelSynthesis();
         setSpeaking(false);
@@ -126,20 +128,23 @@ public class ContinuousSpeechController {
     }
 
     public void interruptCurrentSpeech() {
+        cancelSynthesisFallback();
         cancelSynthesis();
         setSpeaking(false);
         awaitingResponse = false;
         cancelRecognition();
         if (continuousActive) {
-            scheduleRecognitionRestart(RECOGNITION_RETRY_DELAY_MS);
+            forceRestartListening(RECOGNITION_RETRY_DELAY_MS);
             notifyStatus(Status.INTERRUPTED);
         }
     }
 
     public void speak(String text) {
+        cancelSynthesisFallback();
+
         if (speechManager == null || TextUtils.isEmpty(text)) {
             awaitingResponse = false;
-            scheduleRecognitionRestart(RECOGNITION_RETRY_DELAY_MS);
+            forceRestartListening(RECOGNITION_RETRY_DELAY_MS);
             return;
         }
 
@@ -172,9 +177,20 @@ public class ContinuousSpeechController {
         } catch (Throwable error) {
             Log.w(TAG, "Could not synthesize response", error);
             onSynthesisFinished();
+            return;
         }
 
-        // Allow voice barge-in while the robot is speaking.
+        // Cruzr TTS done callbacks are unreliable; fall back to a duration estimate.
+        synthesisFallbackRunnable = () -> {
+            synthesisFallbackRunnable = null;
+            if (speaking) {
+                Log.w(TAG, "Synthesis callback missed; restarting listen via fallback timer");
+                onSynthesisFinished(false);
+            }
+        };
+        mainHandler.postDelayed(synthesisFallbackRunnable, estimateSpeechDurationMs(text));
+
+        // Voice barge-in while the robot is speaking.
         scheduleRecognitionRestart(POST_SPEECH_DELAY_MS);
     }
 
@@ -206,9 +222,8 @@ public class ContinuousSpeechController {
             return;
         }
 
-        if (speechManager.isRecognizing()) {
+        if (speaking) {
             recognitionStarting = false;
-            notifyStatus(Status.LISTENING);
             return;
         }
 
@@ -253,7 +268,9 @@ public class ContinuousSpeechController {
                             mainHandler.post(() -> {
                                 recognitionStarting = false;
                                 recognitionPromise = null;
-                                scheduleRecognitionRestart(RECOGNITION_RETRY_DELAY_MS);
+                                if (!speaking) {
+                                    scheduleRecognitionRestart(RECOGNITION_RETRY_DELAY_MS);
+                                }
                             });
                         }
                     });
@@ -280,6 +297,7 @@ public class ContinuousSpeechController {
         notifyPartialSpeech(partial);
 
         if (speaking && partial.trim().length() >= BARGE_IN_MIN_CHARS) {
+            cancelSynthesisFallback();
             cancelSynthesis();
             setSpeaking(false);
             notifyStatus(Status.INTERRUPTED);
@@ -292,17 +310,24 @@ public class ContinuousSpeechController {
 
         String text = result != null ? result.getText() : null;
         if (TextUtils.isEmpty(text)) {
-            scheduleRecognitionRestart(RECOGNITION_RETRY_DELAY_MS);
+            if (!speaking) {
+                scheduleRecognitionRestart(RECOGNITION_RETRY_DELAY_MS);
+            }
             return;
         }
 
         if (speaking) {
+            cancelSynthesisFallback();
             cancelSynthesis();
             setSpeaking(false);
         }
 
         awaitingResponse = true;
-        notifyFinalSpeech(text);
+        try {
+            notifyFinalSpeech(text);
+        } finally {
+            awaitingResponse = false;
+        }
     }
 
     private void handleRecognitionFailure(RecognitionException exception) {
@@ -314,7 +339,10 @@ public class ContinuousSpeechController {
                 : "Speech recognition failed.";
         Log.w(TAG, message, exception);
 
-        if (!awaitingResponse && !speaking) {
+        if (speaking) {
+            return;
+        }
+        if (!awaitingResponse) {
             scheduleRecognitionRestart(RECOGNITION_RETRY_DELAY_MS);
         }
     }
@@ -324,14 +352,35 @@ public class ContinuousSpeechController {
     }
 
     private void onSynthesisFinished(boolean cancelled) {
+        cancelSynthesisFallback();
         synthesisPromise = null;
         setSpeaking(false);
         if (continuousActive) {
-            scheduleRecognitionRestart(cancelled ? RECOGNITION_RETRY_DELAY_MS : POST_SPEECH_DELAY_MS);
+            forceRestartListening(cancelled ? RECOGNITION_RETRY_DELAY_MS : POST_SPEECH_DELAY_MS);
             if (!cancelled) {
                 notifyStatus(Status.LISTENING);
             }
         }
+    }
+
+    /**
+     * Tear down any stale recognizer session and start a fresh listen cycle.
+     * Used after TTS so the second question is not blocked by a zombie session.
+     */
+    private void forceRestartListening(long delayMs) {
+        if (!continuousActive) {
+            return;
+        }
+        cancelRecognitionRetry();
+        recognitionRetryRunnable = () -> {
+            if (!continuousActive || awaitingResponse || speaking) {
+                return;
+            }
+            cancelRecognition();
+            recognitionStarting = true;
+            beginRecognition();
+        };
+        mainHandler.postDelayed(recognitionRetryRunnable, delayMs);
     }
 
     private void scheduleRecognitionRestart(long delayMs) {
@@ -343,13 +392,24 @@ public class ContinuousSpeechController {
             if (!continuousActive || awaitingResponse) {
                 return;
             }
+            if (speaking) {
+                return;
+            }
             if (speechManager != null && speechManager.isRecognizing()) {
+                notifyStatus(Status.LISTENING);
                 return;
             }
             recognitionStarting = true;
             beginRecognition();
         };
         mainHandler.postDelayed(recognitionRetryRunnable, delayMs);
+    }
+
+    private static long estimateSpeechDurationMs(String text) {
+        if (TextUtils.isEmpty(text)) {
+            return 2500L;
+        }
+        return Math.min(90000L, Math.max(3500L, text.length() * 90L + 2000L));
     }
 
     private void cancelRecognition() {
@@ -376,6 +436,13 @@ public class ContinuousSpeechController {
             } catch (Throwable ignored) {
             }
             synthesisPromise = null;
+        }
+    }
+
+    private void cancelSynthesisFallback() {
+        if (synthesisFallbackRunnable != null) {
+            mainHandler.removeCallbacks(synthesisFallbackRunnable);
+            synthesisFallbackRunnable = null;
         }
     }
 

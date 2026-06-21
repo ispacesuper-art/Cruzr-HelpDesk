@@ -2,7 +2,7 @@
 
 Voice-driven help desk for the **USC Cruzr** robot. Guests speak a question; the app uses **Cruzr speech recognition (STT)**, matches it to **canned answers**, and speaks the reply via **Cruzr TTS**.
 
-**Current version:** 2.2 · **Package:** `com.usc.cruzr.helpdesk`
+**Current version:** 2.3 · **Package:** `com.usc.cruzr.helpdesk`
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
 
@@ -46,8 +46,8 @@ $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
 Release APK:
 
 ```
-app/build/outputs/apk/release/USC-Cruzr-HelpDesk-v2.2-release.apk
-release/USC-Cruzr-HelpDesk-v2.2-release.apk
+app/build/outputs/apk/release/USC-Cruzr-HelpDesk-v2.3-release.apk
+release/USC-Cruzr-HelpDesk-v2.3-release.apk
 ```
 
 ## Install on Cruzr
@@ -55,7 +55,7 @@ release/USC-Cruzr-HelpDesk-v2.2-release.apk
 ### CBIS (recommended for fleet deploy)
 
 1. **CBIS → Remote Config → Application**
-2. Upload `USC-Cruzr-HelpDesk-v2.2-release.apk`
+2. Upload `USC-Cruzr-HelpDesk-v2.3-release.apk`
 3. Package: `com.usc.cruzr.helpdesk`
 4. Entry activity: `com.usc.cruzr.helpdesk.MainActivity`
 5. Ensure robot is **Online** before assigning
@@ -64,7 +64,7 @@ release/USC-Cruzr-HelpDesk-v2.2-release.apk
 
 ```powershell
 adb connect ROBOT_IP:5555
-adb install -r "release\USC-Cruzr-HelpDesk-v2.2-release.apk"
+adb install -r "release\USC-Cruzr-HelpDesk-v2.3-release.apk"
 ```
 
 ## How to use
@@ -107,6 +107,7 @@ Update **CHANGELOG.md** when bumping `versionName` in `app/build.gradle`.
 |-------|-------------|
 | App crashes on open | Deploy v2.0+ (hardened startup). Remove stuck CBIS assignment and reinstall. |
 | Listens forever, no answer | Use **v2.2+** (single-utterance mode). Pause after speaking. |
+| Works once, then stops listening | Use **v2.3+** (force-restart after each answer). Tap **Listen** if needed. |
 | “Speech recognition failed” | Voice assistant may hold mic; topic buttons still work. Reopen app. |
 | Mic busy / timeout | Wait a moment; tap **Listen** to retry. Assistant is paused automatically. |
 | CBIS stuck “Configurating” | Confirm robot **Online**; remove/reassign app in CBIS. |
