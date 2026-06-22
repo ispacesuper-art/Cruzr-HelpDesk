@@ -16,8 +16,8 @@ android {
         applicationId "com.usc.cruzr.helpdesk"
         minSdk 21
         targetSdk 26
-        versionCode 19
-        versionName "2.8"
+        versionCode 20
+        versionName "2.9"
     }
 
     signingConfigs {

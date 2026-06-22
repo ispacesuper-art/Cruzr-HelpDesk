@@ -245,9 +245,6 @@ public class MainActivity extends AppCompatActivity implements ContinuousSpeechC
             case ContinuousSpeechController.Status.REQUESTING_MIC:
                 statusText.setText(R.string.status_requesting_mic);
                 break;
-            case ContinuousSpeechController.Status.RETRYING_MIC:
-                statusText.setText(R.string.status_retrying_mic);
-                break;
             case ContinuousSpeechController.Status.LISTENING:
                 statusText.setText(R.string.status_listening_always);
                 break;

@@ -68,6 +68,13 @@ public final class VoiceAssistantController {
         mainHandler.postDelayed(keepAliveRunnable, KEEPALIVE_INTERVAL_MS);
     }
 
+    public static void prepareForListening(Context context) {
+        Context appContext = context.getApplicationContext();
+        suppressNow(appContext);
+        mainHandler.postDelayed(() -> suppressNow(appContext), 350);
+        mainHandler.postDelayed(() -> suppressNow(appContext), 800);
+    }
+
     private static void suppressNow(Context context) {
         suppressAssistantManager(context);
         AssistantSkillPauser.pauseAssistantSkills();

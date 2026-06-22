@@ -37,7 +37,7 @@ public class ContinuousSpeechController {
     }
 
     private static final String TAG = "ContinuousSpeech";
-    private static final long MIC_PREPARE_DELAY_MS = 3500L;
+    private static final long MIC_PREPARE_DELAY_MS = 300L;
     private static final long RECOGNITION_RETRY_DELAY_MS = 400L;
     private static final long POST_SPEECH_DELAY_MS = 800L;
     private static final long RECOGNITION_TIMEOUT_MS = 12000L;
@@ -119,6 +119,7 @@ public class ContinuousSpeechController {
         cancelSynthesisFallback();
         cancelRecognition();
         cancelSynthesis();
+        speechResources.cancelAccessRequest();
         setSpeaking(false);
         try {
             if (speechManager != null) {
@@ -224,15 +225,6 @@ public class ContinuousSpeechController {
                     notifyError(reason);
                 });
             }
-
-            @Override
-            public void onRetrying(int attempt, int maxAttempts) {
-                mainHandler.post(() -> {
-                    if (continuousActive) {
-                        notifyStatus(Status.RETRYING_MIC);
-                    }
-                });
-            }
         });
     }
 
@@ -247,10 +239,7 @@ public class ContinuousSpeechController {
             return;
         }
 
-        try {
-            VoiceAssistantController.disableForHelpDesk(appContext);
-        } catch (Throwable ignored) {
-        }
+        VoiceAssistantController.prepareForListening(appContext);
 
         try {
             speechManager.stopRecording();
@@ -299,8 +288,8 @@ public class ContinuousSpeechController {
         } catch (Throwable error) {
             Log.w(TAG, "Could not start recognition", error);
             recognitionStarting = false;
-            notifyError("Speech recognition failed to start.");
-            scheduleRecognitionRestart(RECOGNITION_RETRY_DELAY_MS);
+            VoiceAssistantController.prepareForListening(appContext);
+            scheduleRecognitionRestart(1200L);
         }
     }
 
@@ -362,8 +351,9 @@ public class ContinuousSpeechController {
         if (speaking) {
             return;
         }
+        VoiceAssistantController.prepareForListening(appContext);
         if (!awaitingResponse) {
-            scheduleRecognitionRestart(RECOGNITION_RETRY_DELAY_MS);
+            scheduleRecognitionRestart(1200L);
         }
     }
 
@@ -516,7 +506,6 @@ public class ContinuousSpeechController {
 
     static final class Status {
         static final String REQUESTING_MIC = "requesting_mic";
-        static final String RETRYING_MIC = "retrying_mic";
         static final String LISTENING = "listening";
         static final String SPEAKING = "speaking";
         static final String INTERRUPTED = "interrupted";

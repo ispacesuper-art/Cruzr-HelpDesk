@@ -2,7 +2,7 @@
 
 Voice-driven help desk for the **USC Cruzr** robot. Guests speak a question; the app uses **Cruzr speech recognition (STT)**, matches it to **canned answers**, and speaks the reply via **Cruzr TTS**.
 
-**Current version:** 2.8 · **Package:** `com.usc.cruzr.helpdesk`
+**Current version:** 2.9 · **Package:** `com.usc.cruzr.helpdesk`
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
 
@@ -47,8 +47,8 @@ $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
 Release APK:
 
 ```
-app/build/outputs/apk/release/USC-Cruzr-HelpDesk-v2.8-release.apk
-release/USC-Cruzr-HelpDesk-v2.8-release.apk
+app/build/outputs/apk/release/USC-Cruzr-HelpDesk-v2.9-release.apk
+release/USC-Cruzr-HelpDesk-v2.9-release.apk
 ```
 
 ## Install on Cruzr
@@ -56,7 +56,7 @@ release/USC-Cruzr-HelpDesk-v2.8-release.apk
 ### CBIS (recommended for fleet deploy)
 
 1. **CBIS → Remote Config → Application**
-2. Upload `USC-Cruzr-HelpDesk-v2.8-release.apk`
+2. Upload `USC-Cruzr-HelpDesk-v2.9-release.apk`
 3. Package: `com.usc.cruzr.helpdesk`
 4. Entry activity: `com.usc.cruzr.helpdesk.MainActivity`
 5. Ensure robot is **Online** before assigning
@@ -65,7 +65,7 @@ release/USC-Cruzr-HelpDesk-v2.8-release.apk
 
 ```powershell
 adb connect ROBOT_IP:5555
-adb install -r "release\USC-Cruzr-HelpDesk-v2.8-release.apk"
+adb install -r "release\USC-Cruzr-HelpDesk-v2.9-release.apk"
 ```
 
 ## How to use
@@ -112,7 +112,8 @@ Update **CHANGELOG.md** when bumping `versionName` in `app/build.gradle`.
 | “Speech recognition failed” | Voice assistant may hold mic; topic buttons still work. Reopen app. |
 | App crashes on open | Deploy **v2.7+** (v2.4/v2.6 LeisureManager crash). Remove stuck CBIS install first. |
 | Crashes a few seconds after open | Use **v2.7** — removes the deferred 5 s leisure call. |
-| Mic busy / voice assistant interference | Deploy **v2.8+** — pauses assistant skills, retries mic access, suppresses every 1 s. Tap **Listen** if needed. |
+| Stuck on "Retrying microphone access" | Deploy **v2.9+** — no longer waits on competition callbacks. |
+| Mic busy / voice assistant interference | **v2.9** — assistant skill pause + burst suppress, then starts listening directly. Tap **Listen** if needed. |
 | CBIS stuck “Configurating” | Confirm robot **Online**; remove/reassign app in CBIS. |
 | No TTS | Check Cruzr speech service / network. Reboot robot if needed. |
 

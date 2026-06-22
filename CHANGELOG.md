@@ -2,6 +2,12 @@
 
 All notable changes to the USC Cruzr Help Desk app are documented here.
 
+## [2.9] — 2026-06-19
+
+### Fixed
+- **Stuck on "Retrying microphone access":** The competition API never grants the mic on Sunny. Help Desk now suppresses the assistant for 2 seconds, then starts `recognize()` directly (the SDK handles its own competition session internally).
+- Recognition start failures retry quietly instead of blocking on mic-access callbacks.
+
 ## [2.8] — 2026-06-19
 
 ### Fixed

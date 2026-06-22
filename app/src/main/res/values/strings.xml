@@ -15,8 +15,7 @@
     <string name="status_answered">Answer ready.</string>
     <string name="status_answered_topic">Answered: %1$s</string>
     <string name="status_pausing_assistant">Pausing Cruzr voice assistant…</string>
-    <string name="status_requesting_mic">Pausing voice assistant and taking the microphone…</string>
-    <string name="status_retrying_mic">Voice assistant still active — retrying microphone access…</string>
+    <string name="status_requesting_mic">Pausing voice assistant… get ready to speak.</string>
     <string name="status_already_listening">Could not take over speech recognition. Try again in a moment.</string>
     <string name="label_you_said">You said</string>
     <string name="label_robot_says">Robot says</string>
