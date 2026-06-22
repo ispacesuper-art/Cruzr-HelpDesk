@@ -37,7 +37,7 @@ public class ContinuousSpeechController {
     }
 
     private static final String TAG = "ContinuousSpeech";
-    private static final long MIC_PREPARE_DELAY_MS = 1000L;
+    private static final long MIC_PREPARE_DELAY_MS = 1500L;
     private static final long RECOGNITION_RETRY_DELAY_MS = 400L;
     private static final long POST_SPEECH_DELAY_MS = 800L;
     private static final long RECOGNITION_TIMEOUT_MS = 12000L;
@@ -64,6 +64,7 @@ public class ContinuousSpeechController {
     public ContinuousSpeechController(Context context, SpeechResourceController speechResources) {
         appContext = context.getApplicationContext();
         this.speechResources = speechResources;
+        this.speechResources.setAccessChangeListener(this::onMicAccessLost);
     }
 
     public void setListener(Listener listener) {
@@ -192,6 +193,16 @@ public class ContinuousSpeechController {
 
         // Voice barge-in while the robot is speaking.
         scheduleRecognitionRestart(POST_SPEECH_DELAY_MS);
+    }
+
+    private void onMicAccessLost() {
+        if (!continuousActive || speaking || awaitingResponse) {
+            return;
+        }
+        Log.w(TAG, "Microphone released by system assistant; re-taking");
+        VoiceAssistantController.disableForHelpDesk(appContext);
+        cancelRecognition();
+        forceRestartListening(800L);
     }
 
     private void requestMicrophoneAccess() {

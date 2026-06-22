@@ -12,7 +12,8 @@ import com.ubtrobot.competition.CompetitionListener;
 import com.ubtrobot.competition.CompetitionManager;
 import com.ubtrobot.speech.SpeechConstants;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -26,6 +27,10 @@ public class SpeechResourceController implements CompetitionListener {
         void onDenied(String reason);
     }
 
+    public interface AccessChangeListener {
+        void onAccessLost();
+    }
+
     private static final String TAG = "SpeechResourceController";
     private static final long ACCESS_TIMEOUT_MS = 15000L;
 
@@ -35,6 +40,7 @@ public class SpeechResourceController implements CompetitionListener {
     private CompetitionManager competitionManager;
     private CompetingItemGroup competingGroup;
     private AccessCallback pendingCallback;
+    private AccessChangeListener accessChangeListener;
     private Runnable timeoutRunnable;
     private String deniedMessage = "The Cruzr voice assistant is still using the microphone.";
     private final AtomicBoolean acquired = new AtomicBoolean(false);
@@ -50,6 +56,10 @@ public class SpeechResourceController implements CompetitionListener {
         }
     }
 
+    public void setAccessChangeListener(AccessChangeListener listener) {
+        this.accessChangeListener = listener;
+    }
+
     public void attach() {
         if (attached.getAndSet(true)) {
             return;
@@ -57,16 +67,7 @@ public class SpeechResourceController implements CompetitionListener {
 
         try {
             competitionManager = Robot.globalContext().getSystemService(CompetitionManager.SERVICE);
-            competingGroup = new CompetingItemGroup(Arrays.asList(
-                    new CompetingItem(
-                            SpeechConstants.SERVICE_RECOGNITION,
-                            SpeechConstants.COMPETING_ITEM_RECOGNIZER
-                    ),
-                    new CompetingItem(
-                            SpeechConstants.SERVICE_SYNTHESIS,
-                            SpeechConstants.COMPETING_ITEM_SYNTHESIZER
-                    )
-            ));
+            competingGroup = new CompetingItemGroup(buildCompetingItems());
             competitionManager.registerCompetitionListener(this, competingGroup);
         } catch (Throwable error) {
             attached.set(false);
@@ -144,7 +145,25 @@ public class SpeechResourceController implements CompetitionListener {
         if (competingGroup == null || !competingGroup.getId().equals(group.getId())) {
             return;
         }
-        acquired.set(false);
+        boolean wasAcquired = acquired.getAndSet(false);
+        if (wasAcquired && accessChangeListener != null) {
+            mainHandler.post(accessChangeListener::onAccessLost);
+        }
+    }
+
+    private List<CompetingItem> buildCompetingItems() {
+        List<CompetingItem> items = new ArrayList<>(3);
+        items.add(new CompetingItem(
+                SpeechConstants.SERVICE_RECOGNITION,
+                SpeechConstants.COMPETING_ITEM_RECOGNIZER
+        ));
+        items.add(new CompetingItem(
+                SpeechConstants.SERVICE_SYNTHESIS,
+                SpeechConstants.COMPETING_ITEM_SYNTHESIZER
+        ));
+        // Optional — helps keep TTS/audio away from the system assistant.
+        items.add(new CompetingItem("audio", "stream.speech", true));
+        return items;
     }
 
     private void deliverGranted() {
@@ -168,4 +187,3 @@ public class SpeechResourceController implements CompetitionListener {
         }
     }
 }
-

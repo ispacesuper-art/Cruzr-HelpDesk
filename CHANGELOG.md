@@ -2,6 +2,13 @@
 
 All notable changes to the USC Cruzr Help Desk app are documented here.
 
+## [2.6] — 2026-06-19
+
+### Fixed
+- **Voice assistant still interfering:** Faster AssistantManager keep-alive (1.5 s), deferred `LeisureManager.prohibitedLeisure()` via async init (starts 5 s after open — avoids v2.4 startup crash).
+- **Mic stolen mid-session:** Re-requests the microphone when the competition API reports the assistant took speech resources back.
+- **Broader speech competition:** Also requests optional `audio/stream.speech` alongside recognizer and synthesizer.
+
 ## [2.5] — 2026-06-19
 
 ### Fixed
