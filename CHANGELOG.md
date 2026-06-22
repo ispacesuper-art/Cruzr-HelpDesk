@@ -2,6 +2,12 @@
 
 All notable changes to the USC Cruzr Help Desk app are documented here.
 
+## [3.1] — 2026-06-19
+
+### Added
+- **Varied answers per topic:** Use a `responses` array in `help_topics.json` instead of a single `response` — one line is picked at random on each match (e.g. jokes).
+- Example **Joke** topic with four alternate answers.
+
 ## [3.0] — 2026-06-19
 
 ### Changed

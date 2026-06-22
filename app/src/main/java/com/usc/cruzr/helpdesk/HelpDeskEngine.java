@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 /**
  * Loads canned help-desk topics from assets and matches user speech by keywords.
@@ -23,14 +24,25 @@ public class HelpDeskEngine {
     public static class Topic {
         public final String id;
         public final String label;
-        public final String response;
         private final List<String> keywords;
+        private final List<String> responses;
 
-        Topic(String id, String label, List<String> keywords, String response) {
+        Topic(String id, String label, List<String> keywords, List<String> responses) {
             this.id = id;
             this.label = label;
             this.keywords = keywords;
-            this.response = response;
+            this.responses = responses;
+        }
+
+        /** Picks one answer at random when several are defined for this topic. */
+        String pickResponse(Random random) {
+            if (responses.isEmpty()) {
+                return "";
+            }
+            if (responses.size() == 1) {
+                return responses.get(0);
+            }
+            return responses.get(random.nextInt(responses.size()));
         }
     }
 
@@ -55,6 +67,7 @@ public class HelpDeskEngine {
                     + "or choose a topic below.";
 
     private final List<Topic> topics = new ArrayList<>();
+    private final Random random = new Random();
 
     public HelpDeskEngine(Context context) {
         loadTopics(context);
@@ -86,7 +99,7 @@ public class HelpDeskEngine {
         }
 
         if (bestTopic != null && bestScore > 0) {
-            return new MatchResult(bestTopic, bestTopic.response, bestScore >= 100);
+            return new MatchResult(bestTopic, bestTopic.pickResponse(random), bestScore >= 100);
         }
 
         return new MatchResult(null, DEFAULT_RESPONSE, false);
@@ -95,7 +108,7 @@ public class HelpDeskEngine {
     public MatchResult matchTopicId(String topicId) {
         for (Topic topic : topics) {
             if (topic.id.equals(topicId)) {
-                return new MatchResult(topic, topic.response, true);
+                return new MatchResult(topic, topic.pickResponse(random), true);
             }
         }
         return new MatchResult(null, DEFAULT_RESPONSE, false);
@@ -139,7 +152,7 @@ public class HelpDeskEngine {
                 JSONObject object = array.getJSONObject(i);
                 String id = object.getString("id");
                 String label = object.getString("label");
-                String response = object.getString("response");
+                List<String> responses = loadResponses(object);
 
                 JSONArray keywordArray = object.getJSONArray("keywords");
                 List<String> keywords = new ArrayList<>();
@@ -147,7 +160,7 @@ public class HelpDeskEngine {
                     keywords.add(keywordArray.getString(k));
                 }
 
-                topics.add(new Topic(id, label, keywords, response));
+                topics.add(new Topic(id, label, keywords, responses));
             }
         } catch (Exception e) {
             topics.clear();
@@ -155,8 +168,30 @@ public class HelpDeskEngine {
                     "fallback",
                     "Help",
                     Collections.singletonList("help"),
-                    DEFAULT_RESPONSE
+                    Collections.singletonList(DEFAULT_RESPONSE)
             ));
         }
+    }
+
+    private static List<String> loadResponses(JSONObject object) throws Exception {
+        List<String> responses = new ArrayList<>();
+        if (object.has("responses")) {
+            JSONArray responseArray = object.getJSONArray("responses");
+            for (int r = 0; r < responseArray.length(); r++) {
+                String line = responseArray.getString(r).trim();
+                if (!line.isEmpty()) {
+                    responses.add(line);
+                }
+            }
+        } else if (object.has("response")) {
+            String line = object.getString("response").trim();
+            if (!line.isEmpty()) {
+                responses.add(line);
+            }
+        }
+        if (responses.isEmpty()) {
+            throw new IllegalArgumentException("Topic must have response or responses");
+        }
+        return responses;
     }
 }

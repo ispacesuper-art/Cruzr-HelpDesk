@@ -60,6 +60,17 @@
     "response": "You are welcome! Is there anything else I can help you with today?"
   },
   {
+    "id": "joke",
+    "label": "Joke",
+    "keywords": ["joke", "funny", "make me laugh", "tell me a joke", "humour", "humor"],
+    "responses": [
+      "Why did the robot go to help desk school? To improve its listening skills!",
+      "What do you call a sunny day at UniSC? A bright idea!",
+      "I would tell you a campus map joke, but I might lose my direction.",
+      "Why do students love the library? It has the best stories!"
+    ]
+  },
+  {
     "id": "goodbye",
     "label": "Goodbye",
     "keywords": ["bye", "goodbye", "see you", "later", "done", "that is all", "that's all"],

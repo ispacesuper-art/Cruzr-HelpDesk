@@ -86,7 +86,8 @@ Edit `app/src/main/assets/help_topics.json`:
 |-------|---------|
 | `label` | Button text |
 | `keywords` | Phrases that trigger the topic |
-| `response` | Spoken + on-screen answer |
+| `response` | Single spoken + on-screen answer (use this **or** `responses`) |
+| `responses` | Array of answers — one is chosen **at random** each time the topic matches |
 
 Rebuild, commit, and redeploy after changes.
 
