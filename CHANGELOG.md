@@ -2,6 +2,19 @@
 
 All notable changes to the USC Cruzr Help Desk app are documented here.
 
+## [2.7] — 2026-06-19
+
+### Fixed
+- **Crash a few seconds after open:** Removed deferred `LeisureManager` suppression from v2.6 — it crashes Help Desk on Sunny ~5 s after launch.
+
+### Kept from v2.6
+- AssistantManager keep-alive every 1.5 s
+- Mic re-acquire when the system assistant steals speech resources
+- Optional `audio/stream.speech` competition item
+
+### Note
+- Do not deploy v2.4 or v2.6 on Sunny; use **v2.7**.
+
 ## [2.6] — 2026-06-19
 
 ### Fixed
