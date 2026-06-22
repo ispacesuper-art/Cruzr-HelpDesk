@@ -3,13 +3,13 @@
     "id": "greeting",
     "label": "Hello",
     "keywords": ["hello", "hi", "hey", "good morning", "good afternoon", "good evening", "gday", "g'day"],
-    "response": "Hello! Welcome to the help desk. I can answer questions about opening hours, directions, Wi-Fi, and campus services. What would you like to know?"
+    "response": "Hello! My name is Sunny. I can answer questions about opening hours, directions, Wi-Fi, and campus services. What would you like to know?"
   },
   {
     "id": "hours",
     "label": "Opening hours",
     "keywords": ["hours", "open", "opening", "close", "closing", "time", "when are you"],
-    "response": "The help desk is open Monday to Friday, 8 AM to 5 PM. We are closed on weekends and public holidays."
+    "response": "The tech bar is open Monday to Friday, 8 AM to 5 PM, but the library is open 24/7 for students and staff with valid ID. Please check the campus website for holiday hours."
   },
   {
     "id": "location",
@@ -21,13 +21,13 @@
     "id": "library",
     "label": "Library",
     "keywords": ["library", "books", "study", "learning hub", "learning centre", "learning center"],
-    "response": "The library is on level two. It offers study spaces, printing, and research support during campus opening hours."
+    "response": "Welcome to the Library. You are currently on level [BLANK]. Quiet study spaces are available on level [BLANK].."
   },
   {
     "id": "wifi",
     "label": "Wi-Fi",
     "keywords": ["wifi", "wi-fi", "internet", "network", "password", "connect", "wireless"],
-    "response": "Connect to the campus guest Wi-Fi network and sign in with your student or staff credentials. If you need help, visit the IT support desk."
+    "response": "Connect to the campus guest Wi-Fi network and sign in with your student or staff credentials. If you need help, visit the Tech Bar."
   },
   {
     "id": "it",
@@ -51,7 +51,7 @@
     "id": "human",
     "label": "Speak to a person",
     "keywords": ["person", "human", "staff", "someone", "real person", "agent", "representative", "talk to"],
-    "response": "I can connect you with a staff member at reception. Please walk to the front desk, or press the assistance bell if one is available."
+    "response": "If you head over to the tech bar, one of our staff members will be happy to assist you."
   },
   {
     "id": "thanks",
@@ -60,20 +60,19 @@
     "response": "You are welcome! Is there anything else I can help you with today?"
   },
   {
-    "id": "joke",
-    "label": "Joke",
-    "keywords": ["joke", "funny", "make me laugh", "tell me a joke", "humour", "humor"],
-    "responses": [
-      "Why did the robot go to help desk school? To improve its listening skills!",
-      "What do you call a sunny day at UniSC? A bright idea!",
-      "I would tell you a campus map joke, but I might lose my direction.",
-      "Why do students love the library? It has the best stories!"
-    ]
-  },
-  {
     "id": "goodbye",
     "label": "Goodbye",
     "keywords": ["bye", "goodbye", "see you", "later", "done", "that is all", "that's all"],
-    "response": "Goodbye! Have a great day, and feel free to ask if you need more help."
+    "response": "Goodbye! Have a great day, and feel free to ask if you need anything else."
+  },
+  {
+    "id": "joke",
+    "label": "Joke",
+    "keywords": ["joke", "funny", "humor", "laugh"],
+    "responses": [
+      "Why don't scientists trust atoms? Because they make up everything!",
+      "What do you call a sunny day at UniSC? A bright idea!",
+      "I need to loosen up. Gimme a screwdriver."
+    ]
   }
 ]

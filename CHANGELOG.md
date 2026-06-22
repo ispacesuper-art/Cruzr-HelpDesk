@@ -6,7 +6,10 @@ All notable changes to the USC Cruzr Help Desk app are documented here.
 
 ### Added
 - **Varied answers per topic:** Use a `responses` array in `help_topics.json` instead of a single `response` — one line is picked at random on each match (e.g. jokes).
-- Example **Joke** topic with four alternate answers.
+- Example **Joke** topic with alternate answers.
+
+### Updated (content rebuild, versionCode 23)
+- Sunny greeting, tech bar / library hours, library levels placeholder, Tech Bar Wi-Fi, staff redirect, and joke lines in `help_topics.json`.
 
 ## [3.0] — 2026-06-19
 
