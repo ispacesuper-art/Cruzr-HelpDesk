@@ -76,29 +76,34 @@ public class MainActivity extends AppCompatActivity implements ContinuousSpeechC
     }
 
     private void initializeRobotServices() {
-        robotReady = RobotBootstrap.ensureInitialized(this);
-        if (!robotReady) {
+        try {
+            robotReady = RobotBootstrap.ensureInitialized(this);
+            if (!robotReady) {
+                statusText.setText(R.string.status_robot_unavailable);
+                listenButton.setEnabled(false);
+                stopButton.setEnabled(false);
+                return;
+            }
+
+            speechManager = RobotBootstrap.getSpeechManager();
+            if (speechManager == null) {
+                statusText.setText(R.string.status_speech_unavailable);
+                listenButton.setEnabled(false);
+                stopButton.setEnabled(false);
+                return;
+            }
+
+            speechController.bindSpeechManager(speechManager);
+            VoiceAssistantController.startKeepAliveSuppression(this);
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                    == PackageManager.PERMISSION_GRANTED) {
+                startAutomaticListening();
+            }
+        } catch (Throwable error) {
             statusText.setText(R.string.status_robot_unavailable);
             listenButton.setEnabled(false);
             stopButton.setEnabled(false);
-            return;
-        }
-
-        speechManager = RobotBootstrap.getSpeechManager();
-        if (speechManager == null) {
-            statusText.setText(R.string.status_speech_unavailable);
-            listenButton.setEnabled(false);
-            stopButton.setEnabled(false);
-            return;
-        }
-
-        speechController.bindSpeechManager(speechManager);
-
-        VoiceAssistantController.startKeepAliveSuppression(this);
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                == PackageManager.PERMISSION_GRANTED) {
-            startAutomaticListening();
         }
     }
 

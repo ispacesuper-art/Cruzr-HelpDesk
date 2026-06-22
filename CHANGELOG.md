@@ -2,6 +2,15 @@
 
 All notable changes to the USC Cruzr Help Desk app are documented here.
 
+## [2.5] — 2026-06-19
+
+### Fixed
+- **Startup crash ("Help Desk has stopped"):** Removed `LeisureManager` calls from v2.4 — they crash on some Cruzr builds at app open. Assistant suppression now uses `AssistantManager` keep-alive only.
+- Wrapped robot service initialization in a try/catch so a SDK failure shows an error screen instead of closing the app.
+
+### Note
+- v2.4 should not be deployed; use v2.5 instead.
+
 ## [2.4] — 2026-06-19
 
 ### Fixed
