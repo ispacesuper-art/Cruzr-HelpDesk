@@ -37,7 +37,7 @@ public class ContinuousSpeechController {
     }
 
     private static final String TAG = "ContinuousSpeech";
-    private static final long MIC_PREPARE_DELAY_MS = 1500L;
+    private static final long MIC_PREPARE_DELAY_MS = 3500L;
     private static final long RECOGNITION_RETRY_DELAY_MS = 400L;
     private static final long POST_SPEECH_DELAY_MS = 800L;
     private static final long RECOGNITION_TIMEOUT_MS = 12000L;
@@ -104,7 +104,7 @@ public class ContinuousSpeechController {
         } catch (Throwable ignored) {
         }
 
-        speechResources.reacquire();
+        speechResources.ensureAttached();
         cancelMicPrepare();
         micPrepareRunnable = this::requestMicrophoneAccess;
         mainHandler.postDelayed(micPrepareRunnable, MIC_PREPARE_DELAY_MS);
@@ -222,6 +222,15 @@ public class ContinuousSpeechController {
                     continuousActive = false;
                     recognitionStarting = false;
                     notifyError(reason);
+                });
+            }
+
+            @Override
+            public void onRetrying(int attempt, int maxAttempts) {
+                mainHandler.post(() -> {
+                    if (continuousActive) {
+                        notifyStatus(Status.RETRYING_MIC);
+                    }
                 });
             }
         });
@@ -507,6 +516,7 @@ public class ContinuousSpeechController {
 
     static final class Status {
         static final String REQUESTING_MIC = "requesting_mic";
+        static final String RETRYING_MIC = "retrying_mic";
         static final String LISTENING = "listening";
         static final String SPEAKING = "speaking";
         static final String INTERRUPTED = "interrupted";

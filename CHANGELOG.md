@@ -2,6 +2,16 @@
 
 All notable changes to the USC Cruzr Help Desk app are documented here.
 
+## [2.8] — 2026-06-19
+
+### Fixed
+- **Assistant blocks mic from launch:** Pauses running Cruzr chat/voice skills via `SkillManager`, suppresses assistant at app start (`CruzrApp`), waits 3.5 s before mic request, and retries mic access up to 10 times instead of giving up immediately.
+- **Immediate mic grant:** Uses `isCompetingItemGroupReleased()` when speech resources are already free.
+
+### Added
+- `AssistantSkillPauser` — pauses/stops assistant-related running skills.
+- Status text while retrying: *"Voice assistant still active — retrying microphone access…"*
+
 ## [2.7] — 2026-06-19
 
 ### Fixed

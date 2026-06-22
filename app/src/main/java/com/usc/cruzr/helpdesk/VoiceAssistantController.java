@@ -9,12 +9,11 @@ import com.ubtechinc.cruzr.assistant.sdk.AssistantManager;
 
 /**
  * Keeps the Cruzr system voice assistant suppressed while Help Desk is in use.
- * Uses AssistantManager only — LeisureManager crashes this app on Sunny.
  */
 public final class VoiceAssistantController {
 
     private static final String TAG = "VoiceAssistantController";
-    private static final long KEEPALIVE_INTERVAL_MS = 1500L;
+    private static final long KEEPALIVE_INTERVAL_MS = 1000L;
 
     private static final Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -27,12 +26,12 @@ public final class VoiceAssistantController {
     public static void startKeepAliveSuppression(Context context) {
         Context appContext = context.getApplicationContext();
         keepAliveActive = true;
-        suppressAssistantManager(appContext);
+        suppressNow(appContext);
         scheduleKeepAlive(appContext);
     }
 
     public static void disableForHelpDesk(Context context) {
-        suppressAssistantManager(context.getApplicationContext());
+        suppressNow(context.getApplicationContext());
     }
 
     public static void stopKeepAliveSuppression() {
@@ -63,10 +62,15 @@ public final class VoiceAssistantController {
             if (!keepAliveActive) {
                 return;
             }
-            suppressAssistantManager(appContext);
+            suppressNow(appContext);
             mainHandler.postDelayed(keepAliveRunnable, KEEPALIVE_INTERVAL_MS);
         };
         mainHandler.postDelayed(keepAliveRunnable, KEEPALIVE_INTERVAL_MS);
+    }
+
+    private static void suppressNow(Context context) {
+        suppressAssistantManager(context);
+        AssistantSkillPauser.pauseAssistantSkills();
     }
 
     private static void suppressAssistantManager(Context context) {

@@ -6,6 +6,8 @@ public class CruzrApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        RobotBootstrap.ensureInitialized(this);
+        if (RobotBootstrap.ensureInitialized(this)) {
+            VoiceAssistantController.disableForHelpDesk(this);
+        }
     }
 }

@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements ContinuousSpeechC
 
             speechController.bindSpeechManager(speechManager);
             VoiceAssistantController.startKeepAliveSuppression(this);
+            speechResources.attach();
 
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                     == PackageManager.PERMISSION_GRANTED) {
@@ -243,6 +244,9 @@ public class MainActivity extends AppCompatActivity implements ContinuousSpeechC
         switch (status) {
             case ContinuousSpeechController.Status.REQUESTING_MIC:
                 statusText.setText(R.string.status_requesting_mic);
+                break;
+            case ContinuousSpeechController.Status.RETRYING_MIC:
+                statusText.setText(R.string.status_retrying_mic);
                 break;
             case ContinuousSpeechController.Status.LISTENING:
                 statusText.setText(R.string.status_listening_always);

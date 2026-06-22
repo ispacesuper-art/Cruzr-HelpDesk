@@ -12,8 +12,7 @@ import com.ubtrobot.competition.CompetitionListener;
 import com.ubtrobot.competition.CompetitionManager;
 import com.ubtrobot.speech.SpeechConstants;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -25,6 +24,8 @@ public class SpeechResourceController implements CompetitionListener {
         void onGranted();
 
         void onDenied(String reason);
+
+        void onRetrying(int attempt, int maxAttempts);
     }
 
     public interface AccessChangeListener {
@@ -32,7 +33,9 @@ public class SpeechResourceController implements CompetitionListener {
     }
 
     private static final String TAG = "SpeechResourceController";
-    private static final long ACCESS_TIMEOUT_MS = 15000L;
+    private static final long ACCESS_ATTEMPT_TIMEOUT_MS = 5000L;
+    private static final long RETRY_DELAY_MS = 1500L;
+    private static final int MAX_ACCESS_ATTEMPTS = 10;
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final Context appContext;
@@ -43,6 +46,7 @@ public class SpeechResourceController implements CompetitionListener {
     private AccessChangeListener accessChangeListener;
     private Runnable timeoutRunnable;
     private String deniedMessage = "The Cruzr voice assistant is still using the microphone.";
+    private int accessAttempt;
     private final AtomicBoolean acquired = new AtomicBoolean(false);
     private final AtomicBoolean attached = new AtomicBoolean(false);
 
@@ -60,6 +64,12 @@ public class SpeechResourceController implements CompetitionListener {
         this.accessChangeListener = listener;
     }
 
+    public void ensureAttached() {
+        if (!attached.get()) {
+            attach();
+        }
+    }
+
     public void attach() {
         if (attached.getAndSet(true)) {
             return;
@@ -67,7 +77,16 @@ public class SpeechResourceController implements CompetitionListener {
 
         try {
             competitionManager = Robot.globalContext().getSystemService(CompetitionManager.SERVICE);
-            competingGroup = new CompetingItemGroup(buildCompetingItems());
+            competingGroup = new CompetingItemGroup(Arrays.asList(
+                    new CompetingItem(
+                            SpeechConstants.SERVICE_RECOGNITION,
+                            SpeechConstants.COMPETING_ITEM_RECOGNIZER
+                    ),
+                    new CompetingItem(
+                            SpeechConstants.SERVICE_SYNTHESIS,
+                            SpeechConstants.COMPETING_ITEM_SYNTHESIZER
+                    )
+            ));
             competitionManager.registerCompetitionListener(this, competingGroup);
         } catch (Throwable error) {
             attached.set(false);
@@ -103,28 +122,9 @@ public class SpeechResourceController implements CompetitionListener {
         if (callback == null) {
             return;
         }
-
-        VoiceAssistantController.disableForHelpDesk(appContext);
-
-        if (acquired.get()) {
-            callback.onGranted();
-            return;
-        }
-
-        if (!attached.get()) {
-            attach();
-        }
-
+        accessAttempt = 0;
         pendingCallback = callback;
-        cancelTimeout();
-        timeoutRunnable = () -> {
-            AccessCallback timedOut = pendingCallback;
-            pendingCallback = null;
-            if (timedOut != null) {
-                timedOut.onDenied(deniedMessage);
-            }
-        };
-        mainHandler.postDelayed(timeoutRunnable, ACCESS_TIMEOUT_MS);
+        beginAccessAttempt();
     }
 
     public boolean hasAccess() {
@@ -151,25 +151,61 @@ public class SpeechResourceController implements CompetitionListener {
         }
     }
 
-    private List<CompetingItem> buildCompetingItems() {
-        List<CompetingItem> items = new ArrayList<>(3);
-        items.add(new CompetingItem(
-                SpeechConstants.SERVICE_RECOGNITION,
-                SpeechConstants.COMPETING_ITEM_RECOGNIZER
-        ));
-        items.add(new CompetingItem(
-                SpeechConstants.SERVICE_SYNTHESIS,
-                SpeechConstants.COMPETING_ITEM_SYNTHESIZER
-        ));
-        // Optional — helps keep TTS/audio away from the system assistant.
-        items.add(new CompetingItem("audio", "stream.speech", true));
-        return items;
+    private void beginAccessAttempt() {
+        VoiceAssistantController.disableForHelpDesk(appContext);
+
+        if (acquired.get()) {
+            deliverGranted();
+            return;
+        }
+
+        ensureAttached();
+        tryGrantIfResourcesReleased();
+
+        cancelTimeout();
+        timeoutRunnable = () -> {
+            if (acquired.get()) {
+                deliverGranted();
+                return;
+            }
+            if (accessAttempt >= MAX_ACCESS_ATTEMPTS) {
+                AccessCallback callback = pendingCallback;
+                pendingCallback = null;
+                if (callback != null) {
+                    callback.onDenied(deniedMessage);
+                }
+                return;
+            }
+            accessAttempt++;
+            AccessCallback callback = pendingCallback;
+            if (callback != null) {
+                callback.onRetrying(accessAttempt, MAX_ACCESS_ATTEMPTS);
+            }
+            reacquire();
+            mainHandler.postDelayed(this::beginAccessAttempt, RETRY_DELAY_MS);
+        };
+        mainHandler.postDelayed(timeoutRunnable, ACCESS_ATTEMPT_TIMEOUT_MS);
+    }
+
+    private void tryGrantIfResourcesReleased() {
+        if (competitionManager == null || competingGroup == null) {
+            return;
+        }
+        try {
+            if (competitionManager.isCompetingItemGroupReleased(competingGroup)) {
+                acquired.set(true);
+                deliverGranted();
+            }
+        } catch (Throwable error) {
+            Log.w(TAG, "Could not check speech resource availability", error);
+        }
     }
 
     private void deliverGranted() {
         cancelTimeout();
         AccessCallback callback = pendingCallback;
         pendingCallback = null;
+        accessAttempt = 0;
         if (callback != null) {
             callback.onGranted();
         }
@@ -178,6 +214,7 @@ public class SpeechResourceController implements CompetitionListener {
     private void cancelPendingRequest() {
         cancelTimeout();
         pendingCallback = null;
+        accessAttempt = 0;
     }
 
     private void cancelTimeout() {
