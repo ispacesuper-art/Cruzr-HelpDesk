@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements ContinuousSpeechC
     private TextView responseText;
     private MaterialButton listenButton;
     private MaterialButton stopButton;
-    private MaterialButton welcomeButton;
+    private MaterialButton exitButton;
     private LinearLayout topicButtonContainer;
 
     private HelpDeskEngine helpDeskEngine;
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements ContinuousSpeechC
         responseText = findViewById(R.id.responseText);
         listenButton = findViewById(R.id.listenButton);
         stopButton = findViewById(R.id.stopButton);
-        welcomeButton = findViewById(R.id.welcomeButton);
+        exitButton = findViewById(R.id.exitButton);
         topicButtonContainer = findViewById(R.id.topicButtonContainer);
 
         helpDeskEngine = new HelpDeskEngine(this);
@@ -65,9 +65,9 @@ public class MainActivity extends AppCompatActivity implements ContinuousSpeechC
 
         listenButton.setOnClickListener(v -> interruptCurrentSpeech());
         stopButton.setOnClickListener(v -> pauseListening());
-        welcomeButton.setOnClickListener(v -> deliverResponse(helpDeskEngine.getWelcomeResponse(), null));
+        exitButton.setOnClickListener(v -> exitApp());
 
-        buildTopicButtons();
+        buildQuickAskButtons();
         ensureMicrophonePermission();
         updateListenButtonLabel();
         statusText.setText(R.string.status_starting);
@@ -156,24 +156,48 @@ public class MainActivity extends AppCompatActivity implements ContinuousSpeechC
         }
     }
 
-    private void buildTopicButtons() {
+    private void exitApp() {
+        speechController.stopContinuousListening();
+        try {
+            VoiceAssistantController.restoreDefault(this);
+        } catch (Throwable ignored) {
+        }
+        finish();
+    }
+
+    private void buildQuickAskButtons() {
         topicButtonContainer.removeAllViews();
         int margin = dpToPx(8);
+        int horizontalPadding = dpToPx(20);
+        int verticalPadding = dpToPx(12);
 
-        for (HelpDeskEngine.Topic topic : helpDeskEngine.getTopics()) {
-            AppCompatButton button = new AppCompatButton(this);
-            button.setText(topic.label);
-            button.setAllCaps(false);
+        addQuickAskButton(R.string.quick_ask_wifi, "wifi", margin, horizontalPadding, verticalPadding);
+        addQuickAskButton(R.string.quick_ask_reception, "location", margin, horizontalPadding, verticalPadding);
+        addQuickAskButton(R.string.quick_ask_amenities, "food", margin, horizontalPadding, verticalPadding);
+        addQuickAskButton(R.string.quick_ask_parking, "parking", margin, horizontalPadding, verticalPadding);
+    }
 
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-            );
-            params.bottomMargin = margin;
-            button.setLayoutParams(params);
-            button.setOnClickListener(v -> handleTopicSelection(topic.id));
-            topicButtonContainer.addView(button);
-        }
+    private void addQuickAskButton(int labelResId, String topicId, int margin,
+                                   int horizontalPadding, int verticalPadding) {
+        AppCompatButton button = new AppCompatButton(this, null, androidx.appcompat.R.attr.borderlessButtonStyle);
+        button.setText(labelResId);
+        button.setAllCaps(false);
+        button.setTextColor(ContextCompat.getColor(this, R.color.unisc_text));
+        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        button.setTypeface(button.getTypeface(), android.graphics.Typeface.BOLD);
+        button.setBackgroundResource(R.drawable.bg_button_pill_quick_ask);
+        button.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+        button.setMinHeight(dpToPx(48));
+        button.setMinWidth(0);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMarginEnd(margin);
+        button.setLayoutParams(params);
+        button.setOnClickListener(v -> handleTopicSelection(topicId));
+        topicButtonContainer.addView(button);
     }
 
     private int dpToPx(int dp) {

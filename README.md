@@ -2,7 +2,7 @@
 
 Voice-driven help desk for the **USC Cruzr** robot. Guests speak a question; the app uses **Cruzr speech recognition (STT)**, matches it to **canned answers**, and speaks the reply via **Cruzr TTS**.
 
-**Current version:** 2.9 · **Package:** `com.usc.cruzr.helpdesk`
+**Current version:** 3.0 · **Package:** `com.usc.cruzr.helpdesk`
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
 
@@ -47,8 +47,8 @@ $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
 Release APK:
 
 ```
-app/build/outputs/apk/release/USC-Cruzr-HelpDesk-v2.9-release.apk
-release/USC-Cruzr-HelpDesk-v2.9-release.apk
+app/build/outputs/apk/release/USC-Cruzr-HelpDesk-v3.0-release.apk
+release/USC-Cruzr-HelpDesk-v3.0-release.apk
 ```
 
 ## Install on Cruzr
@@ -56,7 +56,7 @@ release/USC-Cruzr-HelpDesk-v2.9-release.apk
 ### CBIS (recommended for fleet deploy)
 
 1. **CBIS → Remote Config → Application**
-2. Upload `USC-Cruzr-HelpDesk-v2.9-release.apk`
+2. Upload `USC-Cruzr-HelpDesk-v3.0-release.apk`
 3. Package: `com.usc.cruzr.helpdesk`
 4. Entry activity: `com.usc.cruzr.helpdesk.MainActivity`
 5. Ensure robot is **Online** before assigning
@@ -65,7 +65,7 @@ release/USC-Cruzr-HelpDesk-v2.9-release.apk
 
 ```powershell
 adb connect ROBOT_IP:5555
-adb install -r "release\USC-Cruzr-HelpDesk-v2.9-release.apk"
+adb install -r "release\USC-Cruzr-HelpDesk-v3.0-release.apk"
 ```
 
 ## How to use

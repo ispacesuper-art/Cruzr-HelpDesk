@@ -2,6 +2,13 @@
 
 All notable changes to the USC Cruzr Help Desk app are documented here.
 
+## [3.0] — 2026-06-19
+
+### Changed
+- **UniSC Help Desk UI** — matches campus mockup: logo header, User/Sunny panels (blue/yellow borders), pill Listen/Stop buttons, Quick Ask bar (Wi-Fi, Reception, Amenities, Parking).
+- App title renamed to **UniSC Help Desk**; added **Exit** button.
+- Brand colours in `colors.xml`; university logo in `drawable-nodpi/unisc_logo.png`.
+
 ## [2.9] — 2026-06-19
 
 ### Fixed

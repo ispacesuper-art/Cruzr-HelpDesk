@@ -13,7 +13,7 @@
   },
   {
     "id": "location",
-    "label": "Where is reception?",
+    "label": "Reception",
     "keywords": ["where", "location", "reception", "front desk", "find you", "directions", "map"],
     "response": "Reception is on the ground floor near the main entrance. Follow the signs to the information desk and someone can assist you in person."
   },
@@ -43,7 +43,7 @@
   },
   {
     "id": "food",
-    "label": "Food & coffee",
+    "label": "Amenities",
     "keywords": ["food", "coffee", "cafe", "cafeteria", "lunch", "eat", "hungry", "canteen"],
     "response": "The campus cafe is on the ground floor and serves coffee, snacks, and light meals during weekday business hours."
   },

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="unisc_blue">#0066CC</color>
+    <color name="unisc_blue_dark">#004C99</color>
+    <color name="unisc_yellow">#F5B800</color>
+    <color name="unisc_yellow_dark">#D9A300</color>
+    <color name="unisc_stop_blue">#7BAFD4</color>
+    <color name="unisc_stop_blue_dark">#5E96BF</color>
+    <color name="unisc_text">#000000</color>
+    <color name="unisc_text_muted">#333333</color>
+    <color name="unisc_background">#FFFFFF</color>
+    <color name="unisc_panel_fill">#FFFFFF</color>
+    <color name="unisc_divider">#E0E0E0</color>
+</resources>

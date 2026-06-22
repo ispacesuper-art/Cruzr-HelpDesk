@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Help Desk</string>
-    <string name="title_help_desk">Campus Help Desk</string>
-    <string name="status_ready">Help Desk has paused the Cruzr voice assistant. Speak anytime — I am listening.</string>
+    <string name="app_name">UniSC Help Desk</string>
+    <string name="title_help_desk">UniSC Help Desk</string>
+    <string name="content_desc_logo">University of the Sunshine Coast logo</string>
+    <string name="status_ready">Speak anytime — Sunny is listening.</string>
     <string name="status_starting">Starting Help Desk…</string>
-    <string name="status_robot_unavailable">Cruzr robot services are unavailable. Topic buttons still work.</string>
-    <string name="status_speech_unavailable">Speech is unavailable. Topic buttons still work.</string>
+    <string name="status_robot_unavailable">Robot services unavailable. Quick Ask buttons still work.</string>
+    <string name="status_speech_unavailable">Speech unavailable. Quick Ask buttons still work.</string>
     <string name="status_listening">Listening… speak clearly, then wait for a response.</string>
     <string name="status_listening_always">Listening… speak your question, then pause.</string>
-    <string name="status_speaking">Speaking… say something or tap Interrupt to stop me.</string>
+    <string name="status_speaking">Speaking… tap Listen to interrupt.</string>
     <string name="status_interrupted">Stopped. Listening for your next question.</string>
     <string name="status_paused">Listening paused. Tap Listen to resume.</string>
     <string name="status_no_permission">Microphone permission is required for voice questions.</string>
@@ -16,20 +17,22 @@
     <string name="status_answered_topic">Answered: %1$s</string>
     <string name="status_pausing_assistant">Pausing Cruzr voice assistant…</string>
     <string name="status_requesting_mic">Pausing voice assistant… get ready to speak.</string>
-    <string name="status_already_listening">Could not take over speech recognition. Try again in a moment.</string>
-    <string name="label_you_said">You said</string>
-    <string name="label_robot_says">Robot says</string>
+    <string name="label_user">User:</string>
+    <string name="label_sunny">Sunny:</string>
     <string name="label_waiting">Waiting for your question…</string>
-    <string name="label_listening">Listening…</string>
     <string name="label_paused">Listening paused</string>
-    <string name="label_intro">Speak your question, or choose a topic below.</string>
-    <string name="label_quick_topics">Quick topics</string>
+    <string name="label_intro">Hello! Ask me about Wi-Fi, reception, amenities, or parking.</string>
+    <string name="label_quick_ask">Quick Ask</string>
     <string name="btn_listen">Listen</string>
     <string name="btn_interrupt">Interrupt</string>
     <string name="btn_stop">Stop</string>
-    <string name="btn_welcome">Welcome message</string>
-    <string name="error_recognition_failed">Speech recognition failed. Try again or tap a topic.</string>
-    <string name="error_mic_busy">The Cruzr voice assistant is still using the microphone. Wait a moment, or use a topic button instead.</string>
+    <string name="btn_exit">Exit</string>
+    <string name="error_recognition_failed">Speech recognition failed. Try again or tap Quick Ask.</string>
+    <string name="error_mic_busy">The Cruzr voice assistant is still using the microphone. Wait a moment, or use Quick Ask.</string>
     <string name="error_no_speech">No speech was detected. Please try again.</string>
     <string name="toast_allow_microphone">Allow microphone access in Settings.</string>
+    <string name="quick_ask_wifi">Wi-Fi</string>
+    <string name="quick_ask_reception">Reception</string>
+    <string name="quick_ask_amenities">Amenities</string>
+    <string name="quick_ask_parking">Parking</string>
 </resources>
