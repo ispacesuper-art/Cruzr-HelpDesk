@@ -2,6 +2,15 @@
 
 All notable changes to the USC Cruzr Help Desk app are documented here.
 
+## [3.2] — 2026-06-22
+
+### Added
+- **Multiple voice lines per topic** — every topic in `help_topics.json` now has 2–3 `responses` variants.
+- **Quick Ask from JSON** — set `"quickAsk": true` on a topic to show it as a yellow pill button (Wi-Fi, Reception, Amenities, Parking).
+
+### Changed
+- Quick Ask buttons use Material **yellow pill** styling with light elevation.
+
 ## [3.1] — 2026-06-19
 
 ### Added

@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -167,37 +166,22 @@ public class MainActivity extends AppCompatActivity implements ContinuousSpeechC
 
     private void buildQuickAskButtons() {
         topicButtonContainer.removeAllViews();
-        int margin = dpToPx(8);
-        int horizontalPadding = dpToPx(20);
-        int verticalPadding = dpToPx(12);
+        int margin = dpToPx(10);
 
-        addQuickAskButton(R.string.quick_ask_wifi, "wifi", margin, horizontalPadding, verticalPadding);
-        addQuickAskButton(R.string.quick_ask_reception, "location", margin, horizontalPadding, verticalPadding);
-        addQuickAskButton(R.string.quick_ask_amenities, "food", margin, horizontalPadding, verticalPadding);
-        addQuickAskButton(R.string.quick_ask_parking, "parking", margin, horizontalPadding, verticalPadding);
-    }
+        for (HelpDeskEngine.Topic topic : helpDeskEngine.getQuickAskTopics()) {
+            MaterialButton button = new MaterialButton(this, null, R.style.Widget_HelpDesk_PillButton_QuickAsk);
+            button.setText(topic.label);
+            button.setAllCaps(false);
 
-    private void addQuickAskButton(int labelResId, String topicId, int margin,
-                                   int horizontalPadding, int verticalPadding) {
-        AppCompatButton button = new AppCompatButton(this, null, androidx.appcompat.R.attr.borderlessButtonStyle);
-        button.setText(labelResId);
-        button.setAllCaps(false);
-        button.setTextColor(ContextCompat.getColor(this, R.color.unisc_text));
-        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-        button.setTypeface(button.getTypeface(), android.graphics.Typeface.BOLD);
-        button.setBackgroundResource(R.drawable.bg_button_pill_quick_ask);
-        button.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
-        button.setMinHeight(dpToPx(48));
-        button.setMinWidth(0);
-
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        params.setMarginEnd(margin);
-        button.setLayoutParams(params);
-        button.setOnClickListener(v -> handleTopicSelection(topicId));
-        topicButtonContainer.addView(button);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            params.setMarginEnd(margin);
+            button.setLayoutParams(params);
+            button.setOnClickListener(v -> handleTopicSelection(topic.id));
+            topicButtonContainer.addView(button);
+        }
     }
 
     private int dpToPx(int dp) {

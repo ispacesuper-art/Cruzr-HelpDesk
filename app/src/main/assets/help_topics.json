@@ -3,67 +3,115 @@
     "id": "greeting",
     "label": "Hello",
     "keywords": ["hello", "hi", "hey", "good morning", "good afternoon", "good evening", "gday", "g'day"],
-    "response": "Hello! My name is Sunny. I can answer questions about opening hours, directions, Wi-Fi, and campus services. What would you like to know?"
+    "responses": [
+      "Hello! My name is Sunny. I can answer questions about opening hours, directions, Wi-Fi, and campus services. What would you like to know?",
+      "Hi there! I'm Sunny, your UniSC help desk assistant. Ask me anything about the campus.",
+      "Good day! Sunny here. How can I help you today?"
+    ]
   },
   {
     "id": "hours",
     "label": "Opening hours",
     "keywords": ["hours", "open", "opening", "close", "closing", "time", "when are you"],
-    "response": "The tech bar is open Monday to Friday, 8 AM to 5 PM, but the library is open 24/7 for students and staff with valid ID. Please check the campus website for holiday hours."
+    "responses": [
+      "The tech bar is open Monday to Friday, 8 AM to 5 PM, but the library is open 24/7 for students and staff with valid ID. Please check the campus website for holiday hours.",
+      "Tech bar hours are 8 AM to 5 PM, weekdays. The library stays open around the clock for students and staff with ID.",
+      "For holiday hours, check the campus website. On regular weekdays, the tech bar is open 8 to 5, and the library is 24/7 for students and staff."
+    ]
   },
   {
     "id": "location",
     "label": "Reception",
+    "quickAsk": true,
     "keywords": ["where", "location", "reception", "front desk", "find you", "directions", "map"],
-    "response": "Reception is on the ground floor near the main entrance. Follow the signs to the information desk and someone can assist you in person."
+    "responses": [
+      "Reception is on the ground floor near the main entrance. Follow the signs to the information desk and someone can assist you in person.",
+      "You'll find reception near the main entrance on the ground floor. Look for the information desk signs.",
+      "Head to the ground floor main entrance — reception and the information desk are right there."
+    ]
   },
   {
     "id": "library",
     "label": "Library",
     "keywords": ["library", "books", "study", "learning hub", "learning centre", "learning center"],
-    "response": "Welcome to the Library. You are currently on level [BLANK]. Quiet study spaces are available on level [BLANK].."
+    "responses": [
+      "Welcome to the Library. You are currently on level [BLANK]. Quiet study spaces are available on level [BLANK].",
+      "The library has study spaces, printing, and research support. Quiet zones are on level [BLANK].",
+      "Need to study? The library is a great spot — check level [BLANK] for quiet study areas."
+    ]
   },
   {
     "id": "wifi",
     "label": "Wi-Fi",
+    "quickAsk": true,
     "keywords": ["wifi", "wi-fi", "internet", "network", "password", "connect", "wireless"],
-    "response": "Connect to the campus guest Wi-Fi network and sign in with your student or staff credentials. If you need help, visit the Tech Bar."
+    "responses": [
+      "Connect to the campus guest Wi-Fi network and sign in with your student or staff credentials. If you need help, visit the Tech Bar.",
+      "For Wi-Fi, join the campus network and log in with your UniSC student or staff details. The Tech Bar can help if you get stuck.",
+      "Select the campus Wi-Fi network on your device and sign in with your UniSC credentials. Pop into the Tech Bar for connection help."
+    ]
   },
   {
     "id": "it",
     "label": "IT support",
     "keywords": ["it", "computer", "laptop", "login", "password reset", "technical", "tech support", "printer"],
-    "response": "For IT support, visit the IT help desk or call campus support. They can help with passwords, Wi-Fi, printing, and device issues."
+    "responses": [
+      "For IT support, visit the IT help desk or call campus support. They can help with passwords, Wi-Fi, printing, and device issues.",
+      "The Tech Bar can help with laptops, logins, printing, and Wi-Fi. That's your best bet for IT issues.",
+      "Need tech help? Visit the Tech Bar for password resets, printing, and device troubleshooting."
+    ]
   },
   {
     "id": "parking",
     "label": "Parking",
+    "quickAsk": true,
     "keywords": ["parking", "park", "car", "vehicle", "permit"],
-    "response": "Visitor parking is available near the main entrance. Paid parking applies on weekdays. Check signage for permit and accessible parking bays."
+    "responses": [
+      "Visitor parking is available near the main entrance. Paid parking applies on weekdays. Check signage for permit and accessible parking bays.",
+      "You can park near the main entrance. Weekday parking is paid — look for signs showing visitor and accessible bays.",
+      "Parking is available at the main entrance. Remember paid parking on weekdays, and check signs for permit areas."
+    ]
   },
   {
     "id": "food",
     "label": "Amenities",
-    "keywords": ["food", "coffee", "cafe", "cafeteria", "lunch", "eat", "hungry", "canteen"],
-    "response": "The campus cafe is on the ground floor and serves coffee, snacks, and light meals during weekday business hours."
+    "quickAsk": true,
+    "keywords": ["food", "coffee", "cafe", "cafeteria", "lunch", "eat", "hungry", "canteen", "amenities"],
+    "responses": [
+      "The campus cafe is on the ground floor and serves coffee, snacks, and light meals during weekday business hours.",
+      "Looking for coffee or a bite? The ground-floor cafe has snacks and light meals on weekdays.",
+      "Amenities include the campus cafe on the ground floor — coffee, snacks, and meals during the week."
+    ]
   },
   {
     "id": "human",
     "label": "Speak to a person",
     "keywords": ["person", "human", "staff", "someone", "real person", "agent", "representative", "talk to"],
-    "response": "If you head over to the tech bar, one of our staff members will be happy to assist you."
+    "responses": [
+      "If you head over to the tech bar, one of our staff members will be happy to assist you.",
+      "A staff member at the Tech Bar can help you in person — just head over when you're ready.",
+      "For face-to-face help, visit the Tech Bar and our team will take care of you."
+    ]
   },
   {
     "id": "thanks",
     "label": "Thank you",
     "keywords": ["thank", "thanks", "cheers", "appreciate", "helpful"],
-    "response": "You are welcome! Is there anything else I can help you with today?"
+    "responses": [
+      "You are welcome! Is there anything else I can help you with today?",
+      "Happy to help! Ask me anything else anytime.",
+      "My pleasure! Let me know if you need anything else."
+    ]
   },
   {
     "id": "goodbye",
     "label": "Goodbye",
     "keywords": ["bye", "goodbye", "see you", "later", "done", "that is all", "that's all"],
-    "response": "Goodbye! Have a great day, and feel free to ask if you need anything else."
+    "responses": [
+      "Goodbye! Have a great day, and feel free to ask if you need anything else.",
+      "See you later! Come back anytime you need campus help.",
+      "Take care! I'll be here if you have more questions."
+    ]
   },
   {
     "id": "joke",

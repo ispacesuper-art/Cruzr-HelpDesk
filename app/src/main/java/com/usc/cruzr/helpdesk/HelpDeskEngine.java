@@ -24,14 +24,16 @@ public class HelpDeskEngine {
     public static class Topic {
         public final String id;
         public final String label;
+        public final boolean quickAsk;
         private final List<String> keywords;
         private final List<String> responses;
 
-        Topic(String id, String label, List<String> keywords, List<String> responses) {
+        Topic(String id, String label, List<String> keywords, List<String> responses, boolean quickAsk) {
             this.id = id;
             this.label = label;
             this.keywords = keywords;
             this.responses = responses;
+            this.quickAsk = quickAsk;
         }
 
         /** Picks one answer at random when several are defined for this topic. */
@@ -75,6 +77,16 @@ public class HelpDeskEngine {
 
     public List<Topic> getTopics() {
         return Collections.unmodifiableList(topics);
+    }
+
+    public List<Topic> getQuickAskTopics() {
+        List<Topic> quickAskTopics = new ArrayList<>();
+        for (Topic topic : topics) {
+            if (topic.quickAsk) {
+                quickAskTopics.add(topic);
+            }
+        }
+        return Collections.unmodifiableList(quickAskTopics);
     }
 
     public String getWelcomeResponse() {
@@ -160,7 +172,13 @@ public class HelpDeskEngine {
                     keywords.add(keywordArray.getString(k));
                 }
 
-                topics.add(new Topic(id, label, keywords, responses));
+                topics.add(new Topic(
+                        id,
+                        label,
+                        keywords,
+                        responses,
+                        object.optBoolean("quickAsk", false)
+                ));
             }
         } catch (Exception e) {
             topics.clear();
@@ -168,7 +186,8 @@ public class HelpDeskEngine {
                     "fallback",
                     "Help",
                     Collections.singletonList("help"),
-                    Collections.singletonList(DEFAULT_RESPONSE)
+                    Collections.singletonList(DEFAULT_RESPONSE),
+                    false
             ));
         }
     }
